@@ -9,8 +9,10 @@
 <body>
     <div class="container">
         <h1>ZAPM - Process Manager</h1>
-        
-        <div class="form-container">
+        <div class="controls">
+            <button class="btn-add" onclick="toggleAddProcessForm()">Add New Process</button>
+        </div>
+        <div class="form-container hidden" id="addProcess">
             <h2>Add New Process</h2>
             <form id="addProcessForm">
                 <div class="form-group">

@@ -73,6 +73,9 @@ button {
 .form-group {
     margin-bottom: 15px;
 }
+.hidden {
+    display: none;
+}
 label {
     display: block;
     margin-bottom: 5px;

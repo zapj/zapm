@@ -15,12 +15,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Service {
-        #[arg(long, default_value_t = false)]
-        stop: bool,
-        #[arg(long, default_value_t = false)]
-        start: bool,
-        #[arg(long, default_value_t = false)]
-        restart: bool,
+        action : String
     },
     Daemon {
         
@@ -95,16 +90,16 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     // 处理命令
     match &cli.command {
-        Commands::Service { start, stop, restart } => {
-            if *start {
+        Commands::Service { action  } => {
+            if *action == "start" {
                 daemon::start_daemon()?;
             }
 
-            if *stop {
+            if *action == "stop" {
                 daemon::stop_daemon()?;
             }
 
-            if *restart {
+            if *action == "restart" {
                 daemon::stop_daemon()?;
                 daemon::start_daemon()?;
             }

@@ -1,3 +1,9 @@
+
+
+async function toggleAddProcessForm() {
+    document.getElementById('addProcess').classList.toggle('hidden');
+}
+
 // Fetch all processes
 async function fetchProcesses() {
     try {
