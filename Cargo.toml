@@ -3,7 +3,7 @@ name = "zapm"
 version = "0.1.0"
 edition = "2021"
 description = "A process management tool implemented in Rust"
-authors = ["Your Name"]
+authors = ["zap z@zap.cn"]
 
 [dependencies]
 tokio = { version = "1.28", features = ["full"] }

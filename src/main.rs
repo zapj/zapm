@@ -5,7 +5,6 @@ mod server;
 mod utils;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use std::{env, process::{Command, Stdio}};
 
 #[derive(Parser)]
 struct Cli {
@@ -17,9 +16,11 @@ struct Cli {
 enum Commands {
     Service {
         #[arg(long, default_value_t = false)]
-        install: bool,
+        stop: bool,
         #[arg(long, default_value_t = false)]
-        uninstall : bool,
+        start: bool,
+        #[arg(long, default_value_t = false)]
+        restart: bool,
     },
     Daemon {
         
@@ -94,27 +95,18 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
     // 处理命令
     match &cli.command {
-        Commands::Service { install, uninstall } => {
-            // if *install {
-            //     if let Err(e) = utils::install_service() {
-            //         eprintln!("Failed to install service: {:?}", e)
-            //     } else {
-            //         println!("Service installed")
-            //     }
-            // }
-            // if *uninstall {
-            //     if let Err(e) = utils::uninstall_service() {
-            //         eprintln!("Failed to install service: {:?}", e)
-            //     } else {
-            //         println!("Service uninstalled")
-            //     }
-            // }  
-            // start service
-            // env::current_exe().unwrap().as_path().as_os_str()
-            //创建守护进程
+        Commands::Service { start, stop, restart } => {
+            if *start {
+                daemon::start_daemon()?;
+            }
 
+            if *stop {
+                daemon::stop_daemon()?;
+            }
 
-            // server::start_server( config::SERVER_CONF.read().unwrap().host.as_str(),config::SERVER_CONF.read().unwrap().port).await?;
+            if *restart {
+                
+            }
             
         }
         Commands::Daemon {} => {
