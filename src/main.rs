@@ -105,7 +105,8 @@ async fn main() -> Result<()> {
             }
 
             if *restart {
-                
+                daemon::stop_daemon()?;
+                daemon::start_daemon()?;
             }
             
         }

@@ -1,5 +1,3 @@
-use std::thread;
-use std::time::Duration;
 use anyhow::Result;
 
 #[cfg(target_os = "windows")]
@@ -9,7 +7,9 @@ use winapi::um::winbase::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use winapi::um::processthreadsapi::{OpenProcess, TerminateProcess};
 use winapi::um::winnt::PROCESS_TERMINATE;
 use winapi::shared::minwindef::DWORD;
-use std::ptr::null_mut;
+
+#[cfg(target_os = "linux")]
+extern crate libc;
 
 /// 启动守护进程（跨平台实现）
 pub fn start_daemon() -> Result<()> {
@@ -103,6 +103,18 @@ fn terminate_process_by_pid(pid: u32) -> Result<(), String> {
         }
 
         // CloseHandle(handle); // Not strictly necessary after TerminateProcess, but good practice
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::io;
+        use std::io::Error;
+        
+        unsafe {
+            if libc::kill(pid, libc::SIGKILL) != 0 {
+                return Err(Error::last_os_error());
+            }
+        }
     }
     Ok(())
 }
