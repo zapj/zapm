@@ -200,8 +200,8 @@ DELETE /api/processes/:name
 
 ZAPM 的配置文件位于：
 
-- Windows: `%APPDATA%\zapm\config.json`
-- Linux: `~/.config/zapm/config.json`
+- Windows: `%USER%\.zapm\zapm.yaml`
+- Linux: `/etc/zapm/zapm.yaml`
 
 ## 系统要求
 

@@ -7,8 +7,16 @@ use std::sync::RwLock;
 
 // 配置文件路径
 pub static CONFIG_PATH: Lazy<PathBuf> = Lazy::new(|| {
-    let home = dirs::home_dir().expect("Could not find home directory");
-    home.join(".zapm")
+    #[cfg(target_os = "windows")]
+    {
+        let home = dirs::home_dir().expect("Could not find home directory");
+        home.join(".zapm")
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let etc_path = PathBuf::from(r"/etc");
+        etc_path.join("zapm")
+    }
 });
 
 // 进程配置文件路径
@@ -60,11 +68,11 @@ pub static SERVER_CONF : Lazy<RwLock<ServerConf>> = Lazy::new(|| {
     let mut server_conf = match fs::read_to_string(&path) {
         Ok(content) => {
             serde_yaml::from_str::<ServerConf>(&content).unwrap_or_else(|_| {
-                ServerConf { host: "127.0.0.1".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
+                ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
             })
         }
         Err(_) => {
-            ServerConf { host: "127.0.0.1".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
+            ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
         }
     };
     server_conf.api_base_url = format!("http://{}:{}",&server_conf.host,&server_conf.port);
