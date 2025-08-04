@@ -2,7 +2,7 @@ use crate::config::{self,get_process, update_process, ProcessConfig, ProcessStat
 use anyhow::{Context, Result};
 use chrono::Local;
 use std::collections::HashMap;
-use std::os::windows::process::CommandExt;
+
 use std::process::{Child, Command};
 use std::sync::{Mutex};
 use std::time::SystemTime;
@@ -12,7 +12,8 @@ use once_cell::sync::Lazy;
 
 #[cfg(target_os = "windows")]
 use winapi::um::winbase::{CREATE_NO_WINDOW};
-
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 // 运行中的进程
 static RUNNING_PROCESSES: Lazy<Mutex<HashMap<String, Child>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 

@@ -117,7 +117,7 @@ async fn main() -> Result<()> {
             if *port != 0 {
                 config::SERVER_CONF.write().unwrap().port = *port;
             }
-            
+
             server::start_server( config::SERVER_CONF.read().unwrap().host.as_str(),config::SERVER_CONF.read().unwrap().port).await?;
         }
         Commands::Add {

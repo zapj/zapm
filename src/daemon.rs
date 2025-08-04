@@ -2,14 +2,25 @@ use anyhow::Result;
 
 #[cfg(target_os = "windows")]
 extern crate winapi;
+#[cfg(target_os = "windows")]
 use winapi::um::processthreadsapi::{CreateProcessA, PROCESS_INFORMATION, STARTUPINFOA};
+#[cfg(target_os = "windows")]
 use winapi::um::winbase::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
+#[cfg(target_os = "windows")]
 use winapi::um::processthreadsapi::{OpenProcess, TerminateProcess};
+#[cfg(target_os = "windows")]
 use winapi::um::winnt::PROCESS_TERMINATE;
+#[cfg(target_os = "windows")]
 use winapi::shared::minwindef::DWORD;
 
 #[cfg(target_os = "linux")]
 extern crate libc;
+
+use std::process::exit;
+use std::{env, process};
+use std::fs;
+
+use crate::config;
 
 /// 启动守护进程（跨平台实现）
 pub fn start_daemon() -> Result<()> {
@@ -61,10 +72,19 @@ pub fn start_daemon() -> Result<()> {
                 let _ = std::os::unix::io::IntoRawFd::into_raw_fd(null);
                 
                 // 执行守护进程逻辑
-                let _ = process::Command::new("zapm")
-                    .arg("daemon")
-                    .spawn()
-                    .map_err(|e| anyhow::anyhow!(e))?;
+                let child_rs = process::Command::new(env::current_exe().unwrap())
+                    .arg("server")
+                    .spawn();
+                match child_rs {
+                    Ok(child) => {
+                        let _ = fs::write("/var/run/zapm.pid", format!("{}", child.id()));
+                    }
+                    Err(_) => {
+                        exit(-1);
+                    }
+                }
+                
+                
             }
             _ => return Ok(()), // 父进程直接退出
         }
@@ -83,6 +103,13 @@ pub fn stop_daemon() -> Result<()> {
         fs::read_to_string(config::CONFIG_PATH.join("zapm.pid").as_path())?.parse::<u32>().map(|pid| {
             let _ = terminate_process_by_pid(pid);
             let _ = fs::remove_file(config::CONFIG_PATH.join("zapm.pid").as_path());
+        })?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        fs::read_to_string("/var/run/zapm.pid")?.parse::<u32>().map(|pid| {
+            let _ = terminate_process_by_pid(pid);
+            let _ = fs::remove_file("/var/run/zapm.pid");
         })?;
     }
     Ok(())
@@ -107,12 +134,11 @@ fn terminate_process_by_pid(pid: u32) -> Result<(), String> {
 
     #[cfg(target_os = "linux")]
     {
-        use std::io;
         use std::io::Error;
         
         unsafe {
-            if libc::kill(pid, libc::SIGKILL) != 0 {
-                return Err(Error::last_os_error());
+            if libc::kill(pid.try_into().unwrap(), libc::SIGKILL) != 0 {
+                return Err(Error::last_os_error().to_string());
             }
         }
     }

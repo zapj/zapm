@@ -72,7 +72,12 @@ pub static SERVER_CONF : Lazy<RwLock<ServerConf>> = Lazy::new(|| {
             })
         }
         Err(_) => {
-            ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
+            let server_conf = ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()};
+            let zapm_yaml_rs = serde_yaml::to_string(&server_conf);
+            if let Ok(yaml_str) = zapm_yaml_rs {
+                let _ = fs::write(path, yaml_str);
+            }
+            server_conf
         }
     };
     server_conf.api_base_url = format!("http://{}:{}",&server_conf.host,&server_conf.port);

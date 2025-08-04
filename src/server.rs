@@ -12,7 +12,7 @@ use include_dir::{include_dir, Dir};
 use mime_guess::from_path;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, ToSocketAddrs};
 use std::str::FromStr;
 
 use tokio::net::TcpListener;
@@ -28,7 +28,6 @@ struct AppState {
 
 // 启动服务器
 pub async fn start_server(host: &str,port: u16) -> anyhow::Result<()> {
-    _ = host;
     // 启动进程监控
     crate::process::start_process_monitor();
 
@@ -46,9 +45,13 @@ pub async fn start_server(host: &str,port: u16) -> anyhow::Result<()> {
 
     // 绑定地址
     // let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    let addr = SocketAddr::from_str(&format!("{}:{}", host, port))?;
-    let listener = TcpListener::bind(addr).await?;
-    println!("Server listening on http://{}", addr);
+    let mut host_port_string = format!("{}:{}", host, port);
+    if host == "localhost" {
+        host_port_string = format!("127.0.0.1:{}",port);
+    }
+  
+    let listener = TcpListener::bind(host_port_string).await?;
+    println!("Server listening on http://{}", format!("{}:{}", host, port));
 
     // 启动服务器
     axum::Server::from_tcp(listener.into_std()?)?
