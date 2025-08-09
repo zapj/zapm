@@ -14,7 +14,7 @@ pub static CONFIG_PATH: Lazy<PathBuf> = Lazy::new(|| {
     }
     #[cfg(target_os = "linux")]
     {
-        let etc_path = PathBuf::from(r"/etc");
+        let etc_path = PathBuf::from("/etc");
         etc_path.join("zapm")
     }
 });
@@ -36,6 +36,7 @@ pub static PROCESS_CONFIG_PATH: Lazy<PathBuf> = Lazy::new(|| {
 pub struct ServerConf {
     pub host : String,
     pub port: u16,
+    #[serde(skip_serializing)]
     pub api_base_url: String,
     
 }
@@ -68,7 +69,12 @@ pub static SERVER_CONF : Lazy<RwLock<ServerConf>> = Lazy::new(|| {
     let mut server_conf = match fs::read_to_string(&path) {
         Ok(content) => {
             serde_yaml::from_str::<ServerConf>(&content).unwrap_or_else(|_| {
-                ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()}
+                let server_conf = ServerConf { host: "localhost".to_string() ,port: 2400 , api_base_url: "http://localhost:2400".to_string()};
+                let zapm_yaml_rs = serde_yaml::to_string(&server_conf);
+                if let Ok(yaml_str) = zapm_yaml_rs {
+                    let _ = fs::write(path, yaml_str);
+                }
+                server_conf    
             })
         }
         Err(_) => {

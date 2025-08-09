@@ -1,0 +1,13 @@
+[Unit]   
+Description=zapm 进程管理工具 
+After=network.target 
+
+[Service] 
+Type=simple         
+WorkingDirectory=/
+KillMode=control-group  
+Restart=yes              
+ExecStart=/usr/local/bin/zapm server
+
+[Install]   
+WantedBy=multi-user.target

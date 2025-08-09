@@ -17,9 +17,6 @@ enum Commands {
     Service {
         action : String
     },
-    Daemon {
-        
-    },
     /// 启动Web服务器（默认）
     Server {
         /// 监听端口
@@ -104,10 +101,6 @@ async fn main() -> Result<()> {
                 daemon::start_daemon()?;
             }
             
-        }
-        Commands::Daemon {} => {
-            // 启动守护进程
-            daemon::start_daemon()?;
         }
         Commands::Server { host ,port } => {
             // 通过 Web API 启动服务

@@ -1,9 +1,7 @@
 use std::path::Path;
-use std::{env, fs, os};
-use std::process::{ExitCode, ExitStatus};
+use std::{env, fs};
 use anyhow::Result;
 use reqwest;
-use tracing_subscriber::fmt::format;
 
 use crate::config;
 

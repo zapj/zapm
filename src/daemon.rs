@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{Result};
+
 
 #[cfg(target_os = "windows")]
 extern crate winapi;
@@ -13,14 +14,8 @@ use winapi::um::winnt::PROCESS_TERMINATE;
 #[cfg(target_os = "windows")]
 use winapi::shared::minwindef::DWORD;
 
-#[cfg(target_os = "linux")]
-extern crate libc;
 
-use std::process::exit;
-use std::{env, process};
 use std::fs;
-
-use crate::config;
 
 /// 启动守护进程（跨平台实现）
 pub fn start_daemon() -> Result<()> {
@@ -58,38 +53,6 @@ pub fn start_daemon() -> Result<()> {
         let _ = fs::write(config::CONFIG_PATH.join("zapm.pid").as_path(), format!("{}", pi.dwProcessId));
     }
     
-    #[cfg(target_os = "linux")]
-    {
-        // Linux 平台实现
-        match unsafe { libc::fork() } {
-            -1 => return Err(anyhow::anyhow!("Failed to fork daemon process")),
-            0 => {
-                // 子进程
-                unsafe { libc::setsid(); } // 创建新会话
-                
-                // 重定向标准输入输出到 /dev/null
-                let null = std::fs::File::open("/dev/null").unwrap();
-                let _ = std::os::unix::io::IntoRawFd::into_raw_fd(null);
-                
-                // 执行守护进程逻辑
-                let child_rs = process::Command::new(env::current_exe().unwrap())
-                    .arg("server")
-                    .spawn();
-                match child_rs {
-                    Ok(child) => {
-                        let _ = fs::write("/var/run/zapm.pid", format!("{}", child.id()));
-                    }
-                    Err(_) => {
-                        exit(-1);
-                    }
-                }
-                
-                
-            }
-            _ => return Ok(()), // 父进程直接退出
-        }
-    }
-    
     Ok(())
 }
 
@@ -116,7 +79,7 @@ pub fn stop_daemon() -> Result<()> {
 }
 
 
-fn terminate_process_by_pid(pid: u32) -> Result<(), String> {
+fn terminate_process_by_pid(pid: u32) -> Result<(),String> {
  
     #[cfg(target_os = "windows")]
     unsafe {
@@ -134,14 +97,14 @@ fn terminate_process_by_pid(pid: u32) -> Result<(), String> {
 
     #[cfg(target_os = "linux")]
     {
-        use std::io::Error;
+        use std::io;
         
         unsafe {
             if libc::kill(pid.try_into().unwrap(), libc::SIGKILL) != 0 {
-                return Err(Error::last_os_error().to_string());
+                return Err(io::Error::last_os_error().to_string());
             }
         }
     }
-    Ok(())
+     Ok(())
 }
 
